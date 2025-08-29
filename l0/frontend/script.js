@@ -64,8 +64,32 @@ class OrderManager {
         }
     }
 
+    async loadOrdersWithoutHidingMessages() {
+        try {
+            this.showLoading();
+            
+            const response = await fetch(`${this.apiBase}/orders`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            this.orders = await response.json() || [];
+            this.filteredOrders = [...this.orders];
+            this.renderOrders();
+            this.updateStats();
+            this.hideLoading();
+        } catch (error) {
+            this.hideLoading();
+            this.showError(`Ошибка загрузки заказов: ${error.message}`);
+            console.error('Error loading orders:', error);
+        }
+    }
+
     async createOrder() {
         try {
+            console.log('Creating order...');
+            this.hideMessages();
+            
             const createBtn = document.getElementById('createOrderBtn');
             createBtn.disabled = true;
             createBtn.textContent = 'Создание...';
@@ -77,20 +101,24 @@ class OrderManager {
                 }
             });
             
+            console.log('Response status:', response.status);
+            
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
             const result = await response.json();
-            console.log('API Response:', result); // DEBUG
+            console.log('API Response:', result);
+            
             this.showSuccess(`Заказ ${result.order_uid} успешно создан!`);
             
-            // Быстрая перезагрузка без задержки
-            this.loadOrders();
+            setTimeout(() => {
+                this.loadOrdersWithoutHidingMessages();
+            }, 1000);
             
         } catch (error) {
-            this.showError(`Ошибка создания заказа: ${error.message}`);
             console.error('Error creating order:', error);
+            this.showError(`Ошибка создания заказа: ${error.message}`);
         } finally {
             const createBtn = document.getElementById('createOrderBtn');
             createBtn.disabled = false;
@@ -158,7 +186,6 @@ class OrderManager {
             return;
         }
 
-        // Используем DocumentFragment для оптимизации DOM операций
         const fragment = document.createDocumentFragment();
         
         this.filteredOrders.forEach(order => {
@@ -186,7 +213,6 @@ class OrderManager {
             fragment.appendChild(orderCard);
         });
         
-        // Одна DOM операция вместо множества
         container.innerHTML = '';
         container.appendChild(fragment);
     }
@@ -200,7 +226,6 @@ class OrderManager {
             
             const order = await response.json();
             
-            // Формируем детальную информацию о заказе
             const items = order.items.map(item => 
                 `• ${item.name} (${item.brand}) - ${item.size || '1'}`
             ).join('\n');
@@ -278,16 +303,40 @@ ${items}`;
     }
 
     showSuccess(message) {
-        console.log('showSuccess called with:', message); // DEBUG
+        console.log('🎉 showSuccess called with:', message);
         const successDiv = document.getElementById('successMessage');
-        console.log('successDiv element:', successDiv); // DEBUG
+        console.log('📍 successDiv element:', successDiv);
+        
+        if (!successDiv) {
+            console.error('Element successMessage not found!');
+            alert(message); 
+            return;
+        }
+        
         successDiv.innerHTML = `<div class="success">${message}</div>`;
-        setTimeout(() => this.hideMessages(), 5000);
+        successDiv.style.display = 'block';
+        console.log(' Success message set, innerHTML:', successDiv.innerHTML);
+    
+        setTimeout(() => {
+            console.log('Hiding success message after timeout');
+            this.hideMessages();
+        }, 5000);
     }
 
     hideMessages() {
-        document.getElementById('errorMessage').innerHTML = '';
-        document.getElementById('successMessage').innerHTML = '';
+        console.log('hideMessages called');
+        const errorDiv = document.getElementById('errorMessage');
+        const successDiv = document.getElementById('successMessage');
+        
+        if (errorDiv) {
+            errorDiv.innerHTML = '';
+            errorDiv.style.display = 'none';
+        }
+        if (successDiv) {
+            successDiv.innerHTML = '';
+            successDiv.style.display = 'none';
+        }
+        console.log('🧹 Messages hidden');
     }
 
 

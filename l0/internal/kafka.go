@@ -4,22 +4,22 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/segmentio/kafka-go"
 	"log"
 	"math/rand"
 	"time"
+
+	"github.com/segmentio/kafka-go"
 )
 
 func Consume(broker, topic string, handler func(Order)) {
-	// Конфигурация консьюмера без GroupID для чтения в single consumer mode
 	r := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:   []string{broker},
-		Topic:     topic,
-		Partition: 0,                   // Читаем только партицию 0
-		MinBytes:  1,
-		MaxBytes:  10e6,
-		MaxWait:   1 * time.Second,
-		StartOffset: kafka.FirstOffset, // Читаем ВСЕ сообщения с начала
+		Brokers:     []string{broker},
+		Topic:       topic,
+		Partition:   0,
+		MinBytes:    1,
+		MaxBytes:    10e6,
+		MaxWait:     1 * time.Second,
+		StartOffset: kafka.FirstOffset,
 	})
 	defer r.Close()
 
@@ -28,33 +28,32 @@ func Consume(broker, topic string, handler func(Order)) {
 
 	for {
 		log.Printf("🔍 Attempting to read message...")
-		
+
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		m, err := r.ReadMessage(ctx)
 		cancel()
 
 		if err != nil {
-			log.Printf("❌ Kafka read error: %v", err)
+			log.Printf("Kafka read error: %v", err)
 			time.Sleep(5 * time.Second)
 			continue
 		}
 
-		log.Printf("📨 Received message from Kafka: key=%s, offset=%d", string(m.Key), m.Offset)
-		log.Printf("📄 Message value: %s", string(m.Value))
+		log.Printf("Received message from Kafka: key=%s, offset=%d", string(m.Key), m.Offset)
+		log.Printf("Message value: %s", string(m.Value))
 
 		var order Order
 		if err := json.Unmarshal(m.Value, &order); err != nil {
-			log.Printf("❌ Unmarshal error: %v", err)
+			log.Printf("Unmarshal error: %v", err)
 			continue
 		}
 
-	log.Printf("📦 Processing order: %s", order.OrderUID)
-	handler(order)
+		log.Printf("📦 Processing order: %s", order.OrderUID)
+		handler(order)
 	}
 }
 
 func GenerateAndSendOrder(broker, topic string) (string, error) {
-	// Используем более современный способ генерации случайных чисел
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	orderUID := fmt.Sprintf("%d", r.Intn(1000000))
 	order := Order{

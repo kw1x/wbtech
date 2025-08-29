@@ -7,12 +7,6 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
-// Ожидается, что таблица orders создана так:
-// CREATE TABLE orders (
-//   order_uid TEXT PRIMARY KEY,
-//   data JSONB NOT NULL
-// );
-
 func NewDB(connStr string) (*pgx.Conn, error) {
 	return pgx.Connect(context.Background(), connStr)
 }

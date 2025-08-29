@@ -20,7 +20,7 @@ var orderCache *internal.Cache
 
 // @title Order Service API
 // @version 1.0
-// @description Микросервис для заказов: Kafka, PostgreSQL, кэш, Gin, Swagger
+// @description Микросервис для заказов
 // @host localhost:8080
 // @BasePath /
 
@@ -59,15 +59,15 @@ func main() {
 	})
 
 	r := gin.Default()
-	
+
 	// Статические файлы для frontend
 	r.Static("/static", "./frontend")
-	
+
 	// Главная страница - возвращает frontend
 	r.GET("/", func(c *gin.Context) {
 		c.File("./frontend/index.html")
 	})
-	
+
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	r.GET("/order/:id", GetOrderHandler)
 	r.GET("/orders", GetAllOrdersHandler)
