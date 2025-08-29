@@ -82,11 +82,11 @@ class OrderManager {
             }
             
             const result = await response.json();
+            console.log('API Response:', result); // DEBUG
             this.showSuccess(`Заказ ${result.order_uid} успешно создан!`);
             
-            setTimeout(() => {
-                this.loadOrders();
-            }, 2000);
+            // Быстрая перезагрузка без задержки
+            this.loadOrders();
             
         } catch (error) {
             this.showError(`Ошибка создания заказа: ${error.message}`);
@@ -158,8 +158,15 @@ class OrderManager {
             return;
         }
 
-        container.innerHTML = this.filteredOrders.map(order => `
-            <div class="order-card" onclick="orderManager.showOrderDetails('${order.order_uid}')">
+        // Используем DocumentFragment для оптимизации DOM операций
+        const fragment = document.createDocumentFragment();
+        
+        this.filteredOrders.forEach(order => {
+            const orderCard = document.createElement('div');
+            orderCard.className = 'order-card';
+            orderCard.onclick = () => this.showOrderDetails(order.order_uid);
+            
+            orderCard.innerHTML = `
                 <div class="order-header">
                     <div class="order-id">ID: ${order.order_uid}</div>
                     <div class="order-date">${this.formatDate(order.date_created)}</div>
@@ -174,8 +181,14 @@ class OrderManager {
                     <strong>Адрес:</strong> 
                     <span>${order.delivery.address}, ${order.delivery.city}</span>
                 </div>
-            </div>
-        `).join('');
+            `;
+            
+            fragment.appendChild(orderCard);
+        });
+        
+        // Одна DOM операция вместо множества
+        container.innerHTML = '';
+        container.appendChild(fragment);
     }
 
     async showOrderDetails(orderId) {
@@ -265,7 +278,9 @@ ${items}`;
     }
 
     showSuccess(message) {
+        console.log('showSuccess called with:', message); // DEBUG
         const successDiv = document.getElementById('successMessage');
+        console.log('successDiv element:', successDiv); // DEBUG
         successDiv.innerHTML = `<div class="success">${message}</div>`;
         setTimeout(() => this.hideMessages(), 5000);
     }

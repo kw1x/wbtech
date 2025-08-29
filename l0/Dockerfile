@@ -30,6 +30,9 @@ COPY --from=builder /app/main .
 # Копируем .env файл если есть
 COPY --from=builder /app/.env .
 
+# Копируем frontend файлы
+COPY --from=builder /app/frontend ./frontend
+
 # Открываем порт
 EXPOSE 8080
 

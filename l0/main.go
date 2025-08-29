@@ -59,6 +59,15 @@ func main() {
 	})
 
 	r := gin.Default()
+	
+	// Статические файлы для frontend
+	r.Static("/static", "./frontend")
+	
+	// Главная страница - возвращает frontend
+	r.GET("/", func(c *gin.Context) {
+		c.File("./frontend/index.html")
+	})
+	
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	r.GET("/order/:id", GetOrderHandler)
 	r.GET("/orders", GetAllOrdersHandler)
