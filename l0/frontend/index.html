@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management System</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Order Management System</h1>
+        
+        <div class="controls">
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="Введите Order UID для поиска заказа...">
+                <button id="searchBtn" class="btn btn-search">🔍</button>
+            </div>
+            <button id="refreshBtn" class="btn">Показать все</button>
+            <button id="createOrderBtn" class="btn btn-success">Создать заказ</button>
+        </div>
+
+        <div class="stats">
+            <span id="orderCount">Загрузка статистики...</span>
+        </div>
+
+        <div id="errorMessage"></div>
+        <div id="successMessage"></div>
+        
+        <div id="loadingMessage" class="loading">Загрузка заказов...</div>
+        
+        <div id="ordersContainer" class="orders-grid"></div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
